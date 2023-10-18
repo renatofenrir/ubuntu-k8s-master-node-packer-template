@@ -1,0 +1,8 @@
+{
+	"proxmox_host": "your-proxmox-ip-or-fqdn:8006",
+	"proxmox_ip": "your-proxmox-ip-or-fqdn",
+	"proxmox_api_user": "root@pam",
+	"proxmox_api_password": "your-proxmox-password",
+	"datastore": "local",
+	"vmid": "5002" 
+}

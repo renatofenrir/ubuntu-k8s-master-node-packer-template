@@ -1,0 +1,17 @@
+stages:
+  - check-packer
+  - init-build
+
+check-packer:
+  tags: 
+    - packer
+  stage: check-packer
+  script:
+    - packer version
+
+init-build:
+  tags:
+    - packer
+  stage: init-build
+  script:
+    - packer build -var-file="./vars.json" ./ubuntu-infra-node-k8s-master.json

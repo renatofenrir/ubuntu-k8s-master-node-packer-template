@@ -1,0 +1,59 @@
+{
+    "builders": [
+        {
+            "type": "proxmox",
+            "proxmox_url": "https://{{user `proxmox_host`}}/api2/json",
+            "insecure_skip_tls_verify": true,
+            "ssh_wait_timeout": "10000s",
+            "username": "{{ user `proxmox_api_user` }}",
+            "password": "{{ user `proxmox_api_password` }}",
+            "vm_id": "{{ user `vmid` }}",
+            "node": "my-prox-nuc-02",
+            "network_adapters": [
+                {
+                    "bridge": "vmbr2"
+                }
+            ],
+            "disks": [
+                {
+                    "type": "scsi",
+                    "disk_size": "40G",
+                    "storage_pool": "local-lvm",
+                    "storage_pool_type": "lvm"
+                }
+            ],
+            "iso_file": "local:iso/ubuntu-22.04.1-live-server-amd64.iso",
+            "unmount_iso": true,
+            "template_name": "ubuntu-k8s-22.04.1-master-node-packer-template",
+            "http_directory": "config",
+            "boot_command": [
+                "<esc><wait><esc><wait><enter><wait>",
+                "/install/vmlinuz ",
+                "initrd=/install/initrd.gz ",
+                "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+                "auto=true ",
+                "priority=critical ",
+                "-- <enter>"
+            ],
+            "ssh_username": "ubuntu",
+            "ssh_password": "ubuntu"
+        }
+    ],
+    "provisioners": [
+        {
+          "execute_command": "echo 'ubuntu' | {{.Vars}} sudo -S -E sh -eux '{{.Path}}'",
+          "type": "shell",
+          "scripts": [
+            "scripts/install-deps.sh"
+          ]
+        }
+    ],
+    "post-processors": [
+		{
+			"type": "shell-local",
+			"inline": [
+				"ssh root@{{user `proxmox_ip`}} qm set {{user `vmid`}} --ide2 {{user `datastore`}}:cloudinit"
+			]
+		}
+	]
+}
